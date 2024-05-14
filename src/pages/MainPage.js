@@ -160,7 +160,7 @@ const MainPage = () => {
   const onDownload = () => {
     const link = document.createElement("a");
     link.download = "sample-csv-file.csv";
-    link.href = "./sample-csv-file.csv";
+    link.href = "/files/sample-csv-file.csv";
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
