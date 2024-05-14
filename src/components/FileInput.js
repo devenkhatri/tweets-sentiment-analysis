@@ -3,7 +3,7 @@ import React from "react";
 const noop = () => {};
 
 const FileInput = ({ value, onChange = noop, ...rest }) => (
-  <div>
+  <div> 
     {Boolean(value && value.length) && (
       <div>Selected files: {value.map(f => f.name).join(", ")}</div>
     )}

@@ -1,5 +1,5 @@
 {
-  "name": "twitter-feed-sentimental",
+  "name": "tweets-sentiment-analysis",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -9,12 +9,12 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.15.17",
+    "@mui/lab": "^5.0.0-alpha.170",
     "@mui/material": "^5.15.17",
     "@mui/styled-engine-sc": "^6.0.0-alpha.18",
-    "bootstrap": "^5.3.3",
+    "js-file-download": "^0.4.12",
     "papaparse": "^5.4.1",
     "react": "^18.2.0",
-    "react-bootstrap": "^2.10.1",
     "react-data-table-component": "^7.6.2",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.1",
