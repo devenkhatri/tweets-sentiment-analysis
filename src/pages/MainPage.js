@@ -169,7 +169,7 @@ const MainPage = () => {
   return(
       <div className="main">
           <div className="main_title_div">
-              <Typography level="h1" className="main_title">Twitter Feed Sentiment Analysis</Typography>
+              <Typography variant="h4" className="main_title">Twitter Feed Sentiment Analysis</Typography>
           </div>
           <Box component="section" sx={{ p: 2, border: '1px solid #f2f2f2'}}>
               <div className="upload_file_text">
@@ -191,7 +191,8 @@ const MainPage = () => {
                     <Button
                       variant="contained"
                       onClick={() => onDownload()}
-                      color="warning"
+                      color="secondary"
+                      variant="outlined"
                       size="small"
                       startIcon={<FileDownloadIcon />}
                       sx={{ mb : 3}}
@@ -217,7 +218,7 @@ const MainPage = () => {
                       />
                     </FormControl>
                     <Box>
-                      <Button variant="outlined" onClick={() => {
+                      <Button variant="contained" onClick={() => {
                         if (identityPoolId) {
                           var object = {value: identityPoolId, timestamp: new Date().getTime()}
                           localStorage.setItem("poolKey", JSON.stringify(object));
@@ -231,7 +232,7 @@ const MainPage = () => {
               </div>
            </Box>
            <Box component="section" sx={{ p: 2, border: '1px solid #f2f2f2', mt:2}}>
-              <Typography level="body-md" sx={{ mb: 1, mt: 0, mr: 3, display: 'inline'  }}>Choose the following button to get information about the video to analyze.</Typography>
+              <Typography level="body-md" sx={{ mb: 1, mt: 0, mr: 3, display: 'inline'  }}>Choose the following button to start the proecess of sentiment analysis of current page.</Typography>
               {pending ?
                 <LoadingButton
                   loading
@@ -243,7 +244,7 @@ const MainPage = () => {
                   Check Sentimental
                 </LoadingButton>
               :
-                <Button sx={{display: 'inline' }}  disabled={generatedSentimental?.[activePage] === true}  variant="outlined" onClick={() => {getAnalyse()}}>Check Sentimental</Button>
+                <Button sx={{display: 'inline' }}  disabled={generatedSentimental?.[activePage] === true} variant="contained" color="secondary" onClick={() => {getAnalyse()}}>Check Sentimental</Button>
               }
               <Typography level="h3" sx={{ mb: 1, mt: 3 }}>List of Files</Typography>
               <div style={{ width: '100%', 'overflow' : 'auto'}}>
