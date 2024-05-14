@@ -169,7 +169,7 @@ const MainPage = () => {
   return(
       <div className="main">
           <div className="main_title_div">
-              <Typography level="h3" className="main_title">Twitter Feed Sentimental Application</Typography>
+              <Typography level="h1" className="main_title">Twitter Feed Sentiment Analysis</Typography>
           </div>
           <Box component="section" sx={{ p: 2, border: '1px solid #f2f2f2'}}>
               <div className="upload_file_text">
