@@ -7,7 +7,6 @@ import { DetectSentimentCommand } from "@aws-sdk/client-comprehend";
 import { comprehendClient} from "../libs/comprehend"
 import LoadingButton from '@mui/lab/LoadingButton';
 import SaveIcon from '@mui/icons-material/Save';
-// import UseModal from '../libs/formDialog';
 import { red, green, blue } from '@mui/material/colors';
 import TextField from '@mui/material/TextField';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
@@ -23,7 +22,9 @@ const VisuallyHiddenInput = styled('input')({
   whiteSpace: 'nowrap',
   width: 1,
 });
+
 const PER_PAGE_ITEM = 1;
+
 const MainPage = () => {
   const [newCSVFile, setCSVFile] = useState();
   const [activePage, setActivePage]= useState(0)
@@ -31,10 +32,7 @@ const MainPage = () => {
   const [pending, setPending] = useState(false);
   const [isClick, setIsClick] = useState(false)
   const [identityPoolId, setIdentityPoolId] = useState("")
-  // Memo that returns true if value is "error"
   const hasError = useMemo(() => !identityPoolId && isClick ? true : false, [identityPoolId, isClick]);
-
-  // Memo that returns a helper message if value is "error" or a blank string if not
   const getHelperText = useMemo(
     () => (!identityPoolId && isClick ? "Pool Key cannot be blank" : ""),
     [identityPoolId, isClick]
@@ -96,11 +94,13 @@ const MainPage = () => {
           // header: true,
           skipEmptyLines: true,
           complete: function(results) {
-            if (results.data.length) {
-            const filterData = results?.data?.map((item) => {return({"feed" : item[0]})})
-            console.log("Finished:", filterData);
-            setTableData(filterData);
-             setActivePage(1)
+            if (results?.data?.length > 1) {
+              const skipOneRowFromArray = results?.data;
+              skipOneRowFromArray.shift()
+              console.log(skipOneRowFromArray)
+              const filterData = skipOneRowFromArray?.map((item) => {return({"feed" : item[0]})})
+              setTableData(filterData);
+              setActivePage(1)
             }
           }}
         )
@@ -239,7 +239,7 @@ const MainPage = () => {
                   loadingPosition="start"
                   startIcon={<SaveIcon />}
                   variant="outlined"
-                  sx={{display: 'inline' }}
+                  sx={{display: 'inline-flex' }}
                 >
                   Check Sentimental
                 </LoadingButton>
