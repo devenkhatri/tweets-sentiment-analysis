@@ -7,9 +7,11 @@ import { DetectSentimentCommand } from "@aws-sdk/client-comprehend";
 import { comprehendClient} from "../libs/comprehend"
 import LoadingButton from '@mui/lab/LoadingButton';
 import SaveIcon from '@mui/icons-material/Save';
-import { red, green, blue } from '@mui/material/colors';
+import { red, green, blue, grey } from '@mui/material/colors';
 import TextField from '@mui/material/TextField';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import GaugeChart from 'react-gauge-chart';
+import CircleIcon from '@mui/icons-material/Circle';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -23,23 +25,25 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-const PER_PAGE_ITEM = 1;
+const PER_PAGE_ITEM = 2;
 
 const MainPage = () => {
   const [newCSVFile, setCSVFile] = useState();
   const [activePage, setActivePage]= useState(0)
+  const [perPageCount, setPerPageCount] = useState(PER_PAGE_ITEM)
   const [tableData, setTableData] = useState([]);
   const [pending, setPending] = useState(false);
   const [isClick, setIsClick] = useState(false)
   const [identityPoolId, setIdentityPoolId] = useState("")
+  const [calculatedSentiment, setCalculatedSentiment] = useState({ "page1" : 0})
+  const [generatedSentimental, setGeneratedSentimental] = useState({
+    1: false
+  });
   const hasError = useMemo(() => !identityPoolId && isClick ? true : false, [identityPoolId, isClick]);
   const getHelperText = useMemo(
     () => (!identityPoolId && isClick ? "Pool Key cannot be blank" : ""),
     [identityPoolId, isClick]
   );
-  const [generatedSentimental, setGeneratedSentimental] = useState({
-    1: false
-  });
   const compareTime = (dateString, now) => {
    if (now - dateString < 86400000) {
      return false
@@ -58,11 +62,17 @@ const MainPage = () => {
     }
     if (!openModal) {
       setIdentityPoolId(object.value);
-    }
+    } 
+    // eslint-disable-next-line
+    console.log("env >", window?.process?.env)
+    // else if (process?.env?.REACT_APP_AWS_POOL_KEY){
+    //   setIdentityPoolId(process.env.REACT_APP_AWS_POOL_KEY)
+    // }
   }
   useEffect(() => {
     checkForModal()
   }, [])
+  
   const columns = [
     {
       maxWidth: "220px",
@@ -71,9 +81,12 @@ const MainPage = () => {
         if (row?.sentimental) {
           return (
             <>
-              <span style={{ color : green[800]}}>{row?.sentimental?.Positive + "% "}</span>
-              <span style={{ color : red[800]}}>{row?.sentimental?.Negative + "% "}</span>
+              <span style={{ color : row?.sentimental?.Color}}>{row?.sentimental?.Final}</span>
+              {/*<span style={{ color : green[800]}}>{row?.sentimental?.Positive + "% "}</span>
               <span style={{ color : blue[800]}}>{row?.sentimental?.Neutral + "% "}</span>
+              <span style={{ color : red[800]}}>{row?.sentimental?.Negative + "% "}</span>
+              <span style={{ color : grey[800]}}>{row?.sentimental?.Mixed + "% "}</span>
+              */}
             </>
             )
         } else {
@@ -97,10 +110,14 @@ const MainPage = () => {
             if (results?.data?.length > 1) {
               const skipOneRowFromArray = results?.data;
               skipOneRowFromArray.shift()
-              console.log(skipOneRowFromArray)
               const filterData = skipOneRowFromArray?.map((item) => {return({"feed" : item[0]})})
               setTableData(filterData);
               setActivePage(1)
+              if (filterData.length < PER_PAGE_ITEM) {
+                setPerPageCount(filterData.length)
+              }
+              setCalculatedSentiment({ "page1": 0 })
+              setGeneratedSentimental({ 1 : false })
             }
           }}
         )
@@ -110,10 +127,25 @@ const MainPage = () => {
     }
   };
   
+  const countPositveGraph = (percentage) => {
+    return (percentage/perPageCount) * 0.33;
+  }
+  const countNegativeGraph = (percentage) => {
+    return ((percentage/perPageCount) * 0.33) + 0.67;
+  }
+  const countMixedGraph = (percentage) => {
+    return ((percentage/perPageCount) * 0.33) + 0.34;
+  }
   const getAnalyse = async () => {
     if (activePage) {
       setPending(true);
-      const modifiedTableData = [...tableData]
+      const modifiedTableData = [...tableData];
+      let postiveCount = 0;
+      let postivePercentage = 0;
+      let negativeCount = 0;
+      let negativePercentage = 0;
+      let mixedCount = 0;
+      let mixedPercentage = 0;
       for (let i = (activePage-1)*PER_PAGE_ITEM; i < (activePage*PER_PAGE_ITEM); i++) {
         if (tableData?.[i]?.['feed'] && identityPoolId) {
           const input = { // DetectSentimentRequest
@@ -123,29 +155,93 @@ const MainPage = () => {
           const command = new DetectSentimentCommand(input);
           try {
             const data = await comprehendClient(identityPoolId).send(command);
-            console.log("data >", data)
             if (data?.SentimentScore) {
               let finalString = {}
               if (data?.SentimentScore?.Negative) {
-                finalString['Negative'] = (data?.SentimentScore?.Negative*100).toFixed(2);
+                finalString['Negative'] = data?.SentimentScore?.Negative;
                 // finalString += `Ne- ${(data?.SentimentScore?.Negative*100).toFixed(2)} % `
               }
               if (data?.SentimentScore?.Neutral) {
-                finalString['Neutral'] = (data?.SentimentScore?.Neutral*100).toFixed(2)
+                finalString['Neutral'] = data?.SentimentScore?.Neutral;
                 // finalString += `, Nu- ${(data?.SentimentScore?.Neutral*100).toFixed(2)} % `
               }
               if (data?.SentimentScore?.Positive) {
-                finalString['Positive'] = (data?.SentimentScore?.Positive*100).toFixed(2)
+                finalString['Positive'] = data?.SentimentScore?.Positive;
                 // finalString += `Po- ${(data?.SentimentScore?.Positive*100).toFixed(2)} % `
               }
+              if (data?.SentimentScore?.Mixed) {
+                finalString['Mixed'] = data?.SentimentScore?.Mixed;
+                // finalString += `Po- ${(data?.SentimentScore?.Positive*100).toFixed(2)} % `
+              }
+              finalString['Final'] = data?.Sentiment;
               modifiedTableData[i] = {...modifiedTableData[i], sentimental : finalString}
+              const item = finalString;
+              switch (item?.Final) {
+                case 'POSITIVE':
+                  postiveCount++;
+                  finalString['Color'] = green[800]
+                  postivePercentage += parseFloat(item['Positive']);
+                  break;
+                case 'NEGATIVE':
+                  negativeCount++;
+                  finalString['Color'] = red[800]
+                  negativePercentage += parseFloat(item['Negative']);
+                  break;
+                case 'MIXED':
+                  mixedCount++;
+                  finalString['Color'] = blue[800]
+                  mixedPercentage += parseFloat(item['Mixed']);
+                  break;
+                default:
+                  finalString['Color'] = grey[800]
+                  // code
+              }
             }
           } catch (error) {
             
           }
         }
-        console.log("modifiedTableData >", modifiedTableData)
       }
+      let finalPercentage = 0;
+      console.log("check >", postiveCount, " ", postivePercentage ," ", negativeCount ," ", negativePercentage ," ", mixedCount ," ", mixedPercentage)
+      if (postiveCount > negativeCount && postiveCount > mixedCount) {
+        finalPercentage = countPositveGraph(postivePercentage);
+      } else if (negativeCount > postiveCount && negativeCount > mixedCount) {
+        finalPercentage = countNegativeGraph(negativePercentage);
+      } else if (mixedCount > postiveCount && mixedCount > negativeCount) {
+        finalPercentage = countMixedGraph(mixedPercentage);
+      } else {
+        if (postiveCount === negativeCount && negativeCount === mixedCount) {
+          if (postivePercentage > negativePercentage && postivePercentage > mixedPercentage) {
+            finalPercentage = countPositveGraph(postivePercentage);
+          } else if(negativePercentage > postivePercentage && negativePercentage > mixedPercentage) {
+            finalPercentage = countNegativeGraph(negativePercentage);
+          } else {
+            finalPercentage = countMixedGraph(mixedPercentage);
+          }
+        } else if (postiveCount === negativeCount) {
+          if (postivePercentage > negativePercentage) {
+            finalPercentage = countPositveGraph(postivePercentage);
+          } else {
+            finalPercentage = countNegativeGraph(negativePercentage);
+          }
+        } else if (postiveCount === mixedCount) {
+          if (postivePercentage > mixedPercentage) {
+            finalPercentage = countPositveGraph(postivePercentage);
+          } else {
+            finalPercentage = countMixedGraph(mixedPercentage);
+          }
+        } else if (negativeCount === mixedCount) {
+          if (negativePercentage > mixedPercentage) {
+            finalPercentage = countNegativeGraph(negativePercentage);
+          } else {
+            finalPercentage = countMixedGraph(mixedPercentage);
+          }
+        }
+      }
+      const finalSent = {...calculatedSentiment, [`page${activePage}`] : finalPercentage.toFixed(2)}
+      console.log("finalPercentage >", finalSent)
+      setCalculatedSentiment(finalSent)
       const generatedSentimentalDummy = {...generatedSentimental}
       generatedSentimentalDummy[activePage] = true
       setGeneratedSentimental(generatedSentimentalDummy)
@@ -154,7 +250,11 @@ const MainPage = () => {
     }
   }
   const handlePageChange = (e) => {
-    console.log("data >>", e)
+    if (tableData.length >= e*PER_PAGE_ITEM) {
+      setPerPageCount(PER_PAGE_ITEM)
+    } else {
+      setPerPageCount(tableData.length - ((e-1)*PER_PAGE_ITEM))
+    }
     setActivePage(e)
   }
   const onDownload = () => {
@@ -246,6 +346,22 @@ const MainPage = () => {
               :
                 <Button sx={{display: 'inline' }}  disabled={generatedSentimental?.[activePage] === true} variant="contained" color="secondary" onClick={() => {getAnalyse()}}>Check Sentimental</Button>
               }
+              <Box sx={{ mt: 2, display : 'flex', direction: 'columns'}}>
+                <div style={{width: "20%", marginRight : '2rem'}}>
+                  <GaugeChart id="gauge-chart5"
+                    arcsLength={[0.33, 0.33, 0.33]}
+                    colors={[green[800], blue[800], red[800]]}
+                    percent={calculatedSentiment[`page${activePage}`] || 0}
+                    // arcPadding={0.02}
+                    hideText={true}
+                  />
+                </div>
+                <Box>
+                  <p style={{ margin: 0 }}><CircleIcon style={{height: "15px", color : green[800]}}/>Postive</p>
+                  <p style={{ margin: 0 }}><CircleIcon style={{height: "15px", color : blue[800]}}/>Mixed</p>
+                  <p style={{ margin: 0 }}><CircleIcon style={{height: "15px", color : red[800]}}/>Negative</p>
+                </Box>
+              </Box>
               <Typography level="h3" sx={{ mb: 1, mt: 3 }}>List of Files</Typography>
               <div style={{ width: '100%', 'overflow' : 'auto'}}>
               {tableData[0] ?
