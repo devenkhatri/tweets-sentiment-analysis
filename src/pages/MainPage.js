@@ -25,7 +25,7 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-const PER_PAGE_ITEM = 2;
+const PER_PAGE_ITEM = 10;
 
 const MainPage = () => {
   const [newCSVFile, setCSVFile] = useState();
@@ -64,7 +64,7 @@ const MainPage = () => {
       setIdentityPoolId(object.value);
     } 
     // eslint-disable-next-line
-    console.log("env >", window?.process?.env)
+    console.log("env >", window?.process?.env, process?.env)
     // else if (process?.env?.REACT_APP_AWS_POOL_KEY){
     //   setIdentityPoolId(process.env.REACT_APP_AWS_POOL_KEY)
     // }
@@ -372,7 +372,7 @@ const MainPage = () => {
                     pointerOnHover
                     paginationPerPage={PER_PAGE_ITEM}
                     pagination={true}
-                    paginationRowsPerPageOptions={[PER_PAGE_ITEM]}
+                    paginationRowsPerPageOptions={[PER_PAGE_ITEM, 20, 30, 40]}
                     onChangePage={handlePageChange}
                   />
                   :
