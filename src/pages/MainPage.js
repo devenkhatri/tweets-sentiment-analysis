@@ -63,8 +63,7 @@ const MainPage = () => {
     if (!openModal) {
       setIdentityPoolId(object.value);
     } 
-    // eslint-disable-next-line
-    console.log("env >", window?.process?.env, process?.env)
+    console.log("env >", process?.env)
     // else if (process?.env?.REACT_APP_AWS_POOL_KEY){
     //   setIdentityPoolId(process.env.REACT_APP_AWS_POOL_KEY)
     // }
@@ -357,9 +356,9 @@ const MainPage = () => {
                   />
                 </div>
                 <Box>
-                  <p style={{ margin: 0 }}><CircleIcon style={{height: "15px", color : green[800]}}/>Postive</p>
-                  <p style={{ margin: 0 }}><CircleIcon style={{height: "15px", color : blue[800]}}/>Mixed</p>
-                  <p style={{ margin: 0 }}><CircleIcon style={{height: "15px", color : red[800]}}/>Negative</p>
+                  <p style={{ margin: 0, display: "flex", justifyContent : "center" }}><CircleIcon style={{height: "15px", color : green[800]}}/>Postive</p>
+                  <p style={{ margin: 0, display: "flex", justifyContent : "center" }}><CircleIcon style={{height: "15px", color : blue[800]}}/>Mixed</p>
+                  <p style={{ margin: 0, display: "flex", justifyContent : "center" }}><CircleIcon style={{height: "15px", color : red[800]}}/>Negative</p>
                 </Box>
               </Box>
               <Typography level="h3" sx={{ mb: 1, mt: 3 }}>List of Files</Typography>
