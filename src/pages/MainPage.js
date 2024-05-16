@@ -25,7 +25,7 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-const PER_PAGE_ITEM = 10;
+let PER_PAGE_ITEM = 10;
 
 const MainPage = () => {
   const [newCSVFile, setCSVFile] = useState();
@@ -137,13 +137,13 @@ const MainPage = () => {
   const getAnalyse = async () => {
     if (activePage) {
       setPending(true);
-      const modifiedTableData = [...tableData];
       let postiveCount = 0;
       let postivePercentage = 0;
       let negativeCount = 0;
       let negativePercentage = 0;
       let mixedCount = 0;
       let mixedPercentage = 0;
+      let modifiedTableData = [...tableData];
       for (let i = (activePage-1)*PER_PAGE_ITEM; i < (activePage*PER_PAGE_ITEM); i++) {
         if (tableData?.[i]?.['feed'] && identityPoolId) {
           const input = { // DetectSentimentRequest
@@ -173,6 +173,7 @@ const MainPage = () => {
               }
               finalString['Final'] = data?.Sentiment;
               modifiedTableData[i] = {...modifiedTableData[i], sentimental : finalString}
+              modifiedTableData = [...modifiedTableData]
               const item = finalString;
               switch (item?.Final) {
                 case 'POSITIVE':
@@ -194,6 +195,7 @@ const MainPage = () => {
                   finalString['Color'] = grey[800]
                   // code
               }
+              setTableData(modifiedTableData)
             }
           } catch (error) {
             
@@ -243,7 +245,7 @@ const MainPage = () => {
       const generatedSentimentalDummy = {...generatedSentimental}
       generatedSentimentalDummy[activePage] = true
       setGeneratedSentimental(generatedSentimentalDummy)
-      setTableData(modifiedTableData)
+      // setTableData(modifiedTableData)
       setPending(false);
     }
   }
@@ -345,7 +347,7 @@ const MainPage = () => {
                 <Button sx={{display: 'inline' }}  disabled={generatedSentimental?.[activePage] === true} variant="contained" color="secondary" onClick={() => {getAnalyse()}}>Check Sentimental</Button>
               }
               <Box sx={{ mt: 2, display : 'flex', direction: 'columns'}}>
-                <div style={{width: "20%", marginRight : '2rem'}}>
+                <div style={{width: "20%", marginRight : '2rem'}} key={(calculatedSentiment[`page${activePage}`] && generatedSentimental[activePage]) ? "true" : "false"}>
                   <GaugeChart id="gauge-chart5"
                     arcsLength={[0.33, 0.33, 0.33]}
                     colors={[green[800], blue[800], red[800]]}
@@ -370,8 +372,16 @@ const MainPage = () => {
                     pointerOnHover
                     paginationPerPage={PER_PAGE_ITEM}
                     pagination={true}
-                    paginationRowsPerPageOptions={[PER_PAGE_ITEM, 20, 30, 40]}
+                    paginationRowsPerPageOptions={[10, 20, 30, 40]}
                     onChangePage={handlePageChange}
+                    onChangeRowsPerPage={(currentRowsPerPage, currentPage) => {
+                      PER_PAGE_ITEM = currentRowsPerPage;
+                      // setCalculatedSentiment({...calculatedSentiment, [`page${currentPage}`] : 0})
+                      setCalculatedSentiment({ 'page1' : 0 })
+                      setGeneratedSentimental({ 1 : false})
+                      // setGeneratedSentimental({...generatedSentimental, [currentPage] : false})
+                      handlePageChange(currentPage)
+                    }}
                   />
                   :
                   <Typography level="body-md" sx={{ mb: 1, mt: 0 }}>There are no records to display</Typography>
