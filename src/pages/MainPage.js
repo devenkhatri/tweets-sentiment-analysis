@@ -63,13 +63,14 @@ const MainPage = () => {
     if (!openModal) {
       setIdentityPoolId(object.value);
     } 
-    console.log("env >", process?.env)
+    // console.log("env >", process?.env)
     // else if (process?.env?.REACT_APP_AWS_POOL_KEY){
     //   setIdentityPoolId(process.env.REACT_APP_AWS_POOL_KEY)
     // }
   }
   useEffect(() => {
     checkForModal()
+    console.log("env >", process)
   }, [])
   
   const columns = [
