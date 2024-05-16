@@ -70,7 +70,7 @@ const MainPage = () => {
   }
   useEffect(() => {
     checkForModal()
-    console.log("env >", process)
+    console.log("**** process.env >", process.env.REACT_APP_AWS_POOL_KEY)
   }, [])
   
   const columns = [
