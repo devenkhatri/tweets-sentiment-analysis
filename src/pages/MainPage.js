@@ -12,6 +12,7 @@ import TextField from '@mui/material/TextField';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import GaugeChart from 'react-gauge-chart';
 import CircleIcon from '@mui/icons-material/Circle';
+import _ from 'lodash';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -133,46 +134,34 @@ const MainPage = () => {
   }
   const countMixedGraph = (percentage) => {
     return ((percentage/perPageCount) * 0.33) + 0.34;
+    // console.log("***",(percentage/perPageCount))
+    // return ((percentage/perPageCount)) + 0.34;
   }
   
-  const calculateFinalPercentage = (postiveCount,postivePercentage,negativeCount,negativePercentage,mixedCount,mixedPercentage) => {
+  const calculateFinalPercentage = (postiveCount,postivePercentage,negativeCount,negativePercentage,mixedCount,mixedPercentage,neutralCount,neutralPercentage) => {
     let finalPercentage = 0;
-      console.log("check >", postiveCount, " ", postivePercentage ," ", negativeCount ," ", negativePercentage ," ", mixedCount ," ", mixedPercentage)
-      if (postiveCount > negativeCount && postiveCount > mixedCount) {
+      // console.log("check >", postiveCount, " ", postivePercentage ," ", negativeCount ," ", negativePercentage ," ", neutralCount ," ", neutralPercentage," ", mixedCount ," ", mixedPercentage)
+      // console.log("check >>>> ", postiveCount ," ", negativeCount , neutralCount, mixedCount)
+      console.log("check >>>> ", postivePercentage ," ", negativePercentage , neutralPercentage, mixedPercentage)
+      
+      const valuesArray = [ postivePercentage, negativePercentage , neutralPercentage, mixedPercentage ]
+      
+      var maxObj = _.max(valuesArray);
+      var maxIndex = valuesArray.indexOf(maxObj);
+      if(maxIndex === 0){ // means positive
         finalPercentage = countPositveGraph(postivePercentage);
-      } else if (negativeCount > postiveCount && negativeCount > mixedCount) {
+      } else if(maxIndex === 1){ // means negative
         finalPercentage = countNegativeGraph(negativePercentage);
-      } else if (mixedCount > postiveCount && mixedCount > negativeCount) {
-        finalPercentage = countMixedGraph(mixedPercentage);
-      } else {
-        if (postiveCount === negativeCount && negativeCount === mixedCount) {
-          if (postivePercentage > negativePercentage && postivePercentage > mixedPercentage) {
-            finalPercentage = countPositveGraph(postivePercentage);
-          } else if(negativePercentage > postivePercentage && negativePercentage > mixedPercentage) {
-            finalPercentage = countNegativeGraph(negativePercentage);
-          } else {
-            finalPercentage = countMixedGraph(mixedPercentage);
-          }
-        } else if (postiveCount === negativeCount) {
-          if (postivePercentage > negativePercentage) {
-            finalPercentage = countPositveGraph(postivePercentage);
-          } else {
-            finalPercentage = countNegativeGraph(negativePercentage);
-          }
-        } else if (postiveCount === mixedCount) {
-          if (postivePercentage > mixedPercentage) {
-            finalPercentage = countPositveGraph(postivePercentage);
-          } else {
-            finalPercentage = countMixedGraph(mixedPercentage);
-          }
-        } else if (negativeCount === mixedCount) {
-          if (negativePercentage > mixedPercentage) {
-            finalPercentage = countNegativeGraph(negativePercentage);
-          } else {
-            finalPercentage = countMixedGraph(mixedPercentage);
-          }
-        }
       }
+      else if(maxIndex === 2){ // means neutral
+        finalPercentage = countMixedGraph(neutralPercentage);
+      }
+      else if(maxIndex === 3){ // means mixed
+        finalPercentage = countMixedGraph(mixedPercentage);
+      }
+      
+      console.log("***********", maxObj, maxIndex, finalPercentage);
+      
       return finalPercentage;
   }
   
@@ -185,6 +174,8 @@ const MainPage = () => {
       let negativePercentage = 0;
       let mixedCount = 0;
       let mixedPercentage = 0;
+      let neutralCount = 0;
+      let neutralPercentage = 0;
       let modifiedTableData = [...tableData];
       for (let i = (activePage-1)*PER_PAGE_ITEM; i < (activePage*PER_PAGE_ITEM); i++) {
         if (tableData?.[i]?.['feed'] && identityPoolId) {
@@ -233,6 +224,11 @@ const MainPage = () => {
                   finalString['Color'] = blue[800]
                   mixedPercentage += parseFloat(item['Mixed']);
                   break;
+                case 'NEUTRAL':
+                  neutralCount++;
+                  finalString['Color'] = grey[800]
+                  neutralPercentage += parseFloat(item['Neutral']);
+                  break;
                 default:
                   finalString['Color'] = grey[800]
                   // code
@@ -245,7 +241,7 @@ const MainPage = () => {
         }
         
         //updating overall sentiment of this page
-        const finalPercentage = calculateFinalPercentage(postiveCount,postivePercentage,negativeCount,negativePercentage,mixedCount,mixedPercentage)
+        const finalPercentage = calculateFinalPercentage(postiveCount,postivePercentage,negativeCount,negativePercentage,mixedCount,mixedPercentage,neutralCount,neutralPercentage)
       
         const finalSent = {...calculatedSentiment, [`page${activePage}`] : finalPercentage.toFixed(2)}
         console.log("finalPercentage >", finalSent)
