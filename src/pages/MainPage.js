@@ -134,16 +134,11 @@ const MainPage = () => {
   }
   const countMixedGraph = (percentage) => {
     return ((percentage/perPageCount) * 0.33) + 0.34;
-    // console.log("***",(percentage/perPageCount))
-    // return ((percentage/perPageCount)) + 0.34;
   }
   
   const calculateFinalPercentage = (postiveCount,postivePercentage,negativeCount,negativePercentage,mixedCount,mixedPercentage,neutralCount,neutralPercentage) => {
-    let finalPercentage = 0;
-      // console.log("check >", postiveCount, " ", postivePercentage ," ", negativeCount ," ", negativePercentage ," ", neutralCount ," ", neutralPercentage," ", mixedCount ," ", mixedPercentage)
-      // console.log("check >>>> ", postiveCount ," ", negativeCount , neutralCount, mixedCount)
+      let finalPercentage = 0;
       console.log("check >>>> ", postivePercentage ," ", negativePercentage , neutralPercentage, mixedPercentage)
-      
       const valuesArray = [ postivePercentage, negativePercentage , neutralPercentage, mixedPercentage ]
       
       var maxObj = _.max(valuesArray);
@@ -159,9 +154,7 @@ const MainPage = () => {
       else if(maxIndex === 3){ // means mixed
         finalPercentage = countMixedGraph(mixedPercentage);
       }
-      
       console.log("***********", maxObj, maxIndex, finalPercentage);
-      
       return finalPercentage;
   }
   
@@ -248,12 +241,8 @@ const MainPage = () => {
         setCalculatedSentiment(finalSent)
         const generatedSentimentalDummy = {...generatedSentimental}
         generatedSentimentalDummy[activePage] = true
-        setGeneratedSentimental(generatedSentimentalDummy)  
-        
+        setGeneratedSentimental(generatedSentimentalDummy)
       }
-      
-      
-      // setTableData(modifiedTableData)
       setPending(false);
     }
   }
@@ -273,6 +262,30 @@ const MainPage = () => {
     link.click()
     document.body.removeChild(link)
   };
+  
+  const getOverAllType = (percentageCal) => {
+    let findPerc = {};
+    if (percentageCal > 0.67 && percentageCal <= 1) {
+      findPerc = {
+          percentage: ((percentageCal-0.67) * 100)/0.33,
+          name : "Negative",
+          color: red[800]
+        }
+    } else if (percentageCal <= 0.67 && percentageCal > 0.33) {
+      findPerc = {
+          percentage: ((percentageCal-0.34) * 100)/0.33,
+          name : "Mixed",
+          color: blue[800]
+        }
+    } else {
+      findPerc = {
+          percentage: (percentageCal * 100)/0.33,
+          name : "Positive",
+          color: green[800]
+        }
+    }
+    return(<p>OverAll Sentiment <span style={{color : findPerc['color']}}>{findPerc['name']}</span> : {parseInt(findPerc['percentage'])}% </p>)
+  }
   
   return(
       <div className="main">
@@ -365,9 +378,11 @@ const MainPage = () => {
                   />
                 </div>
                 <Box>
-                  <p style={{ margin: 0, display: "flex", alignItems: "center" }}><CircleIcon style={{height: "15px", color : green[800]}}/>Postive</p>
+                  <p style={{ margin: 0, display: "flex", alignItems: "center" }}><CircleIcon style={{height: "15px", color : green[800]}}/>Positive</p>
                   <p style={{ margin: 0, display: "flex", alignItems: "center" }}><CircleIcon style={{height: "15px", color : blue[800]}}/>Mixed</p>
                   <p style={{ margin: 0, display: "flex", alignItems: "center" }}><CircleIcon style={{height: "15px", color : red[800]}}/>Negative</p>
+                  <p>{(calculatedSentiment[`page${activePage}`] && generatedSentimental[activePage] === true) ? getOverAllType(parseFloat(calculatedSentiment[`page${activePage}`])) : ""}
+                  </p>
                 </Box>
               </Box>
               <Typography level="h3" sx={{ mb: 1, mt: 3 }}>List of Files</Typography>
