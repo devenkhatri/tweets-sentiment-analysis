@@ -134,6 +134,48 @@ const MainPage = () => {
   const countMixedGraph = (percentage) => {
     return ((percentage/perPageCount) * 0.33) + 0.34;
   }
+  
+  const calculateFinalPercentage = (postiveCount,postivePercentage,negativeCount,negativePercentage,mixedCount,mixedPercentage) => {
+    let finalPercentage = 0;
+      console.log("check >", postiveCount, " ", postivePercentage ," ", negativeCount ," ", negativePercentage ," ", mixedCount ," ", mixedPercentage)
+      if (postiveCount > negativeCount && postiveCount > mixedCount) {
+        finalPercentage = countPositveGraph(postivePercentage);
+      } else if (negativeCount > postiveCount && negativeCount > mixedCount) {
+        finalPercentage = countNegativeGraph(negativePercentage);
+      } else if (mixedCount > postiveCount && mixedCount > negativeCount) {
+        finalPercentage = countMixedGraph(mixedPercentage);
+      } else {
+        if (postiveCount === negativeCount && negativeCount === mixedCount) {
+          if (postivePercentage > negativePercentage && postivePercentage > mixedPercentage) {
+            finalPercentage = countPositveGraph(postivePercentage);
+          } else if(negativePercentage > postivePercentage && negativePercentage > mixedPercentage) {
+            finalPercentage = countNegativeGraph(negativePercentage);
+          } else {
+            finalPercentage = countMixedGraph(mixedPercentage);
+          }
+        } else if (postiveCount === negativeCount) {
+          if (postivePercentage > negativePercentage) {
+            finalPercentage = countPositveGraph(postivePercentage);
+          } else {
+            finalPercentage = countNegativeGraph(negativePercentage);
+          }
+        } else if (postiveCount === mixedCount) {
+          if (postivePercentage > mixedPercentage) {
+            finalPercentage = countPositveGraph(postivePercentage);
+          } else {
+            finalPercentage = countMixedGraph(mixedPercentage);
+          }
+        } else if (negativeCount === mixedCount) {
+          if (negativePercentage > mixedPercentage) {
+            finalPercentage = countNegativeGraph(negativePercentage);
+          } else {
+            finalPercentage = countMixedGraph(mixedPercentage);
+          }
+        }
+      }
+      return finalPercentage;
+  }
+  
   const getAnalyse = async () => {
     if (activePage) {
       setPending(true);
@@ -201,50 +243,20 @@ const MainPage = () => {
             
           }
         }
+        
+        //updating overall sentiment of this page
+        const finalPercentage = calculateFinalPercentage(postiveCount,postivePercentage,negativeCount,negativePercentage,mixedCount,mixedPercentage)
+      
+        const finalSent = {...calculatedSentiment, [`page${activePage}`] : finalPercentage.toFixed(2)}
+        console.log("finalPercentage >", finalSent)
+        setCalculatedSentiment(finalSent)
+        const generatedSentimentalDummy = {...generatedSentimental}
+        generatedSentimentalDummy[activePage] = true
+        setGeneratedSentimental(generatedSentimentalDummy)  
+        
       }
-      let finalPercentage = 0;
-      console.log("check >", postiveCount, " ", postivePercentage ," ", negativeCount ," ", negativePercentage ," ", mixedCount ," ", mixedPercentage)
-      if (postiveCount > negativeCount && postiveCount > mixedCount) {
-        finalPercentage = countPositveGraph(postivePercentage);
-      } else if (negativeCount > postiveCount && negativeCount > mixedCount) {
-        finalPercentage = countNegativeGraph(negativePercentage);
-      } else if (mixedCount > postiveCount && mixedCount > negativeCount) {
-        finalPercentage = countMixedGraph(mixedPercentage);
-      } else {
-        if (postiveCount === negativeCount && negativeCount === mixedCount) {
-          if (postivePercentage > negativePercentage && postivePercentage > mixedPercentage) {
-            finalPercentage = countPositveGraph(postivePercentage);
-          } else if(negativePercentage > postivePercentage && negativePercentage > mixedPercentage) {
-            finalPercentage = countNegativeGraph(negativePercentage);
-          } else {
-            finalPercentage = countMixedGraph(mixedPercentage);
-          }
-        } else if (postiveCount === negativeCount) {
-          if (postivePercentage > negativePercentage) {
-            finalPercentage = countPositveGraph(postivePercentage);
-          } else {
-            finalPercentage = countNegativeGraph(negativePercentage);
-          }
-        } else if (postiveCount === mixedCount) {
-          if (postivePercentage > mixedPercentage) {
-            finalPercentage = countPositveGraph(postivePercentage);
-          } else {
-            finalPercentage = countMixedGraph(mixedPercentage);
-          }
-        } else if (negativeCount === mixedCount) {
-          if (negativePercentage > mixedPercentage) {
-            finalPercentage = countNegativeGraph(negativePercentage);
-          } else {
-            finalPercentage = countMixedGraph(mixedPercentage);
-          }
-        }
-      }
-      const finalSent = {...calculatedSentiment, [`page${activePage}`] : finalPercentage.toFixed(2)}
-      console.log("finalPercentage >", finalSent)
-      setCalculatedSentiment(finalSent)
-      const generatedSentimentalDummy = {...generatedSentimental}
-      generatedSentimentalDummy[activePage] = true
-      setGeneratedSentimental(generatedSentimentalDummy)
+      
+      
       // setTableData(modifiedTableData)
       setPending(false);
     }
